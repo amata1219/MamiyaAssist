@@ -1,0 +1,39 @@
+ElytraBoosterUsageRestriction:
+  Enable: true
+  MessageTaskInterval: 300
+#Unit is seconds.
+  Always: false
+  Worlds:
+    - world
+    - world_nether
+    - world_the_end
+    - shigen
+    - shigen2
+#If "- ALL" is added, the whole world will be covered.
+  TPSThreshold: 16
+  Message:
+    Start: "StartMessage"
+    End: "EndMessage"
+    UseCancel: "UseCancel"
+OneClickRide:
+  Minecart:
+    Enable: true
+    Worlds:
+    - world
+    - world_nether
+    - world_the_end
+    - shigen
+    - shigen2
+#If "- ALL" is added, the whole world will be covered.
+  Boat:
+    Enable: true
+    Worlds:
+      - world
+      - world_nether
+      - world_the_end
+      - shigen
+      - shigen2
+#If "- ALL" is added, the whole world will be covered.
+    WoodType: "GENERIC"
+#WoodTypes: ACACIA, BIRTH, DARK_OAK, GENERIC, JUNGLE, REDWOOD
+#Javadoc(TreeSpecies): https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/TreeSpecies.html
