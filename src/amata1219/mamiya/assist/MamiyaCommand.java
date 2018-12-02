@@ -72,6 +72,7 @@ public class MamiyaCommand implements TabExecutor{
 				elytraBoosterTask.runTaskTimer(plugin, 0, c.getLong("ElytraBoosterUsageRestriction.MessageTaskInterval"));
 				listener.setElytraBoosterTask(elytraBoosterTask);
 			}
+			plugin.getOneClickRideListener().load(plugin);
 			send(ChatColor.AQUA, sender, "[MamiyaAssist]のコンフィグを再読み込みしました。");
 			return true;
 		}else if(args[0].equalsIgnoreCase("booster")){

@@ -135,7 +135,7 @@ public class OtameshiCommand implements TabExecutor{
 				for(Long time : s.getSplitTimes()){
 					sender.sendMessage((b ? ChatColor.AQUA : ChatColor.WHITE) + String.valueOf(i) + ". " + s.timeToString(time));
 					i++;
-					b = true;
+					b = !b;
 				}
 				sender.sendMessage("");
 				sender.sendMessage((b ? ChatColor.AQUA : ChatColor.WHITE) + "End. " + s.timeToString(s.getEnd()));

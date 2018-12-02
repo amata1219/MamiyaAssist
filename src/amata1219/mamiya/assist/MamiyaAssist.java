@@ -15,6 +15,7 @@ public class MamiyaAssist extends JavaPlugin{
 
 	private CustomConfig config;
 	private ElytraBoosterListener elytraBoosterListener;
+	private OneClickRideListener oneClickRideListener;
 
 	private HashMap<String, TabExecutor> commands;
 
@@ -29,7 +30,7 @@ public class MamiyaAssist extends JavaPlugin{
 		PluginManager pm = getServer().getPluginManager();
 		FileConfiguration c = config.getConfig();
 		if(c.getBoolean("ElytraBoosterUsageRestriction.Enable"))pm.registerEvents(elytraBoosterListener = new ElytraBoosterListener(plugin), plugin);
-		if(c.getBoolean("OneClickRide.Minecart.Enable") || c.getBoolean("OneClickRide.Boat.Enable"))pm.registerEvents(new OneClickRideListener(plugin), plugin);
+		if(c.getBoolean("OneClickRide.Minecart.Enable") || c.getBoolean("OneClickRide.Boat.Enable"))pm.registerEvents(oneClickRideListener = new OneClickRideListener(plugin), plugin);
 	}
 
 	@Override
@@ -56,6 +57,10 @@ public class MamiyaAssist extends JavaPlugin{
 
 	public ElytraBoosterListener getElytraBoosterListener() {
 		return elytraBoosterListener;
+	}
+
+	public OneClickRideListener getOneClickRideListener(){
+		return oneClickRideListener;
 	}
 
 }
