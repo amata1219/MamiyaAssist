@@ -16,22 +16,9 @@ ElytraBoosterUsageRestriction:
     End: "EndMessage"
     UseCancel: "UseCancel"
 OneClickRide:
-  Minecart:
-    Enable: true
-    MaxSpeedPercent: 400
-    MaxPushSpeedPercent: 180
-    PoweredRailBoostPercent: 150
-    AutoBoostOnSlope: true
-    Worlds:
-    - world
-    - world_nether
-    - world_the_end
-    - shigen
-    - shigen2
-#If "- ALL" is added, the whole world will be covered.
   Boat:
     Enable: true
-    Water: false
+    Water: true
     Worlds:
       - world
       - world_nether

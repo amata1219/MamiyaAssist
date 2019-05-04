@@ -26,11 +26,12 @@ public class MamiyaAssist extends JavaPlugin{
 		config.saveDefaultConfig();
 		commands = new HashMap<String, TabExecutor>();
 		commands.put("mamiya", new MamiyaCommand(plugin));
-		commands.put("otameshi", new OtameshiCommand());
 		PluginManager pm = getServer().getPluginManager();
 		FileConfiguration c = config.getConfig();
-		if(c.getBoolean("ElytraBoosterUsageRestriction.Enable"))pm.registerEvents(elytraBoosterListener = new ElytraBoosterListener(plugin), plugin);
-		if(c.getBoolean("OneClickRide.Minecart.Enable") || c.getBoolean("OneClickRide.Boat.Enable"))pm.registerEvents(oneClickRideListener = new OneClickRideListener(plugin), plugin);
+		if(c.getBoolean("ElytraBoosterUsageRestriction.Enable"))
+			pm.registerEvents(elytraBoosterListener = new ElytraBoosterListener(plugin), plugin);
+		if( c.getBoolean("OneClickRide.Boat.Enable"))
+			pm.registerEvents(oneClickRideListener = new OneClickRideListener(plugin), plugin);
 	}
 
 	@Override

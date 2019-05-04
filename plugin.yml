@@ -1,6 +1,6 @@
 name: MamiyaAssist
 main: amata1219.mamiya.assist.MamiyaAssist
-version: 1.5.0
+version: 1.7.1
 api-version: 1.13
 author: amata1219(Twitter@amata1219)
 
@@ -9,9 +9,4 @@ commands:
     description: mamiya command.
     usage: /<command> commands
     permission: mamiya.assist.command.mamiya
-    permission-message: You do not have permission "<permission>".
-  otameshi:
-    description: otameshi command.
-    usage: /<command>
-    permission: mamiya.assist.command.otameshi
     permission-message: You do not have permission "<permission>".
