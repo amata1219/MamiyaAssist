@@ -29,3 +29,6 @@ OneClickRide:
     WoodType: "GENERIC"
 #WoodTypes: ACACIA, BIRTH, DARK_OAK, GENERIC, JUNGLE, REDWOOD
 #Javadoc(TreeSpecies): https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/TreeSpecies.html
+Regen:
+  OriginWorld: "origin"
+  Limit: 100000

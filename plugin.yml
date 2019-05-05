@@ -2,6 +2,7 @@ name: MamiyaAssist
 main: amata1219.mamiya.assist.MamiyaAssist
 version: 1.7.1
 api-version: 1.13
+softdepend: [WorldEdit]
 author: amata1219(Twitter@amata1219)
 
 commands:

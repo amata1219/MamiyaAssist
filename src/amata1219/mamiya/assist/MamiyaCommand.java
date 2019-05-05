@@ -2,18 +2,51 @@ package amata1219.mamiya.assist;
 
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.EmptyClipboardException;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.bukkit.BukkitPlayer;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.regions.RegionSelector;
+import com.sk89q.worldedit.session.ClipboardHolder;
 
 public class MamiyaCommand implements TabExecutor{
 
 	private MamiyaAssist plugin;
+	private WorldEditPlugin we;
 
-	public MamiyaCommand(MamiyaAssist plugin){
+	private World origin;
+	private int limit;
+
+	public MamiyaCommand(MamiyaAssist plugin, World origin, int limit){
 		this.plugin = plugin;
+		this.origin = origin;
+		this.limit = limit;
+		Plugin pl = plugin.getServer().getPluginManager().getPlugin("WorldEdit");
+		if(pl instanceof WorldEditPlugin){
+			we = (WorldEditPlugin) pl;
+		}
+		System.out.println(origin.getName());
+
 	}
 
 	@Override
@@ -387,11 +420,87 @@ public class MamiyaCommand implements TabExecutor{
 					}
 				}
 			}
-		}else if(args[0].equalsIgnoreCase("minecart")){
-			send(ChatColor.RED, sender, "未実装です。");
-			return true;
-		}else if(args[0].equalsIgnoreCase("boat")){
-			send(ChatColor.RED, sender, "未実装です。");
+		}else if(args[0].equalsIgnoreCase("regen")){
+			if(!(sender instanceof Player)){
+				send(ChatColor.RED, sender, "ゲーム内から実行してください。");
+				return true;
+			}
+
+			if(we == null){
+				send(ChatColor.RED, sender, "WorldEditが読み込まれていません。");
+				return true;
+			}
+
+			Player player = (Player) sender;
+			LocalSession session = we.getSession(player);
+			//WorldEdit.getInstance().getEditSessionFactory().getEditSession(player.getWorld(), WE_LIMIT, player);
+			if(session == null){
+				send(ChatColor.RED, sender, "範囲を指定して下さい。");
+				return true;
+			}
+
+			RegionSelector selector = session.getRegionSelector(session.getSelectionWorld());
+			if(selector == null){
+				send(ChatColor.RED, sender, "範囲を指定して下さい。");
+				return true;
+			}
+
+			Region region = selector.getIncompleteRegion();
+			if(region == null){
+				send(ChatColor.RED, sender, "範囲を指定して下さい。");
+				return true;
+			}
+
+			if(region.getMinimumPoint() == null || region.getMaximumPoint() == null){
+				send(ChatColor.RED, sender, "範囲を指定して下さい。");
+				return true;
+			}
+
+			int volume = region.getWidth() * region.getHeight() * region.getLength();
+			if(volume > limit){
+				send(ChatColor.RED, sender, "指定された範囲が大きすぎます(" + volume + ")。上限は" + limit + "ブロックです。");
+				return true;
+			}
+
+			BukkitPlayer user = we.wrapPlayer(player);
+
+			region.setWorld(BukkitAdapter.adapt(origin));
+			/*BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+			try {
+				clipboard.setOrigin(session.getPlacementPosition(user));
+			} catch (IncompleteRegionException e) {
+				e.printStackTrace();
+			}
+			EditSession editSession = session.createEditSession(user);
+			ForwardExtentCopy copy = new ForwardExtentCopy(editSession, region, clipboard, region.getMinimumPoint());
+			copy.setCopyingEntities(true);
+			try {
+				Operations.completeLegacy(copy);
+			} catch (MaxChangedBlocksException e) {
+				e.printStackTrace();
+			}
+			session.setClipboard(new ClipboardHolder(clipboard));
+
+			ClipboardHolder holder = null;
+			try {
+				holder = session.getClipboard();
+			} catch (EmptyClipboardException e1) {
+				e1.printStackTrace();
+			}
+			//Clipboard clipboard = holder.getClipboard();
+			//Region region = clipboard.getRegion();
+			BlockVector3 to = clipboard.getOrigin();//atOrigin ? clipboard.getOrigin() : session.getPlacementPosition(player);
+			Operation operation = holder.createPaste(editSession).to(to).ignoreAirBlocks(false).build();
+			try {
+				Operations.completeLegacy(operation);
+			} catch (MaxChangedBlocksException e) {
+				e.printStackTrace();
+			}*/
+
+			Bukkit.dispatchCommand(player, "/copy");
+			Bukkit.dispatchCommand(player, "/paste");
+
+			send(ChatColor.AQUA, sender, "指定された範囲を再生成しました。");
 			return true;
 		}
 		send(ChatColor.RED, sender, "入力されたコマンドが不正です。");

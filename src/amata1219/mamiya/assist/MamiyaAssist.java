@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -24,19 +25,19 @@ public class MamiyaAssist extends JavaPlugin{
 		plugin = this;
 		config = new CustomConfig(plugin);
 		config.saveDefaultConfig();
+		FileConfiguration conf = config.getConfig();
 		commands = new HashMap<String, TabExecutor>();
-		commands.put("mamiya", new MamiyaCommand(plugin));
-		PluginManager pm = getServer().getPluginManager();
-		FileConfiguration c = config.getConfig();
-		if(c.getBoolean("ElytraBoosterUsageRestriction.Enable"))
-			pm.registerEvents(elytraBoosterListener = new ElytraBoosterListener(plugin), plugin);
-		if( c.getBoolean("OneClickRide.Boat.Enable"))
-			pm.registerEvents(oneClickRideListener = new OneClickRideListener(plugin), plugin);
+		commands.put("mamiya", new MamiyaCommand(plugin, getServer().getWorld(conf.getString("Regen.OriginWorld")), conf.getInt("Regen.Limit")));
+		PluginManager manager = getServer().getPluginManager();
+		if(conf.getBoolean("ElytraBoosterUsageRestriction.Enable"))
+			manager.registerEvents(elytraBoosterListener = new ElytraBoosterListener(plugin), plugin);
+		if( conf.getBoolean("OneClickRide.Boat.Enable"))
+			manager.registerEvents(oneClickRideListener = new OneClickRideListener(plugin), plugin);
 	}
 
 	@Override
 	public void onDisable(){
-
+		HandlerList.unregisterAll((JavaPlugin) this);
 	}
 
 	@Override
