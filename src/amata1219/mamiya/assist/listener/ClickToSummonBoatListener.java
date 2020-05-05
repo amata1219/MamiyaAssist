@@ -1,4 +1,4 @@
-package amata1219.mamiya.assist;
+package amata1219.mamiya.assist.listener;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -9,7 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.TreeSpecies;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -22,22 +21,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
-import net.minecraft.server.v1_13_R2.AxisAlignedBB;
-import net.minecraft.server.v1_13_R2.EntityHuman;
-import net.minecraft.server.v1_13_R2.FluidCollisionOption;
-import net.minecraft.server.v1_13_R2.MathHelper;
-import net.minecraft.server.v1_13_R2.MovingObjectPosition;
-import net.minecraft.server.v1_13_R2.Vec3D;
-import net.minecraft.server.v1_13_R2.World;
-import net.minecraft.server.v1_13_R2.MovingObjectPosition.EnumMovingObjectType;
+import amata1219.mamiya.assist.MamiyaAssist;
 
-public class OneClickRideListener implements Listener{
+public class ClickToSummonBoatListener implements Listener {
+	
+	public static final String MAMIYA_BOTA_METADATA = "mamiya-boat";
 
 	private boolean  enable;
-	private boolean water;
+	//private boolean water;
 	private List<String> worlds;
 	private TreeSpecies woodType;
-	public static final String MAMIYA_BOTA_METADATA = "mamiya-boat";
+
 	private final HashSet<Material> materials = new HashSet<>(
 				Arrays.asList(
 					Material.ICE,
@@ -46,6 +40,7 @@ public class OneClickRideListener implements Listener{
 					Material.BLUE_ICE
 				)
 			);
+	
 	private final HashSet<Material> handMaterials = new HashSet<>(
 				Arrays.asList(
 					Material.ACACIA_BOAT,
@@ -57,62 +52,62 @@ public class OneClickRideListener implements Listener{
 				)
 			);
 
-	public OneClickRideListener(MamiyaAssist plugin){
+	public ClickToSummonBoatListener(MamiyaAssist plugin){
 		load(plugin);
 	}
 
 	@EventHandler
-	public void onInteract(PlayerInteractEvent e){
-		if(e.getAction() != Action.RIGHT_CLICK_BLOCK)
+	public void onInteract(PlayerInteractEvent event){
+		if(event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+
+		if(event.isBlockInHand()) return;
+
+		Player player = event.getPlayer();
+		if(player.isInsideVehicle() || player.isSneaking()) return;
+
+		if(player.hasMetadata("race") || ((Entity) player).hasMetadata("race-team")) return;
+
+		Block block = event.getClickedBlock();
+		if(!materials.contains(block.getType()) || !enable) return;
+		//if(!(materials.contains(block.getType()) || isClickedWater(player)) || !enable) return;
+		
+		Material type = event.getMaterial();
+		if((type != null && type != Material.AIR && type != Material.VOID_AIR && type != Material.CAVE_AIR) && handMaterials.contains(type))
 			return;
 
-		if(e.isBlockInHand())
-			return;
+		if(!worlds.contains(player.getWorld().getName()) && !worlds.contains("ALL")) return;
 
-		Player player = e.getPlayer();
-		if(player.isInsideVehicle() || player.isSneaking())
-			return;
-
-		if(player.hasMetadata("race") || ((Entity) player).hasMetadata("race-team"))
-			return;
-
-		Block block = e.getClickedBlock();
-		if((materials.contains(block.getType()) || isClickedWater(player)) && enable){
-			Material handMaterial = e.getMaterial();
-			if((handMaterial != null && handMaterial != Material.AIR && handMaterial != Material.VOID_AIR && handMaterial != Material.CAVE_AIR) && handMaterials.contains(handMaterial))
-				return;
-
-			if(!worlds.contains("ALL") && !worlds.contains(player.getWorld().getName()))
-				return;
-
-			Location loc = block.getLocation().add(0, 1, 0);
-			loc.setX(loc.getBlockX() + 0.5);
-			loc.setZ(loc.getBlockZ() + 0.5);
-			loc.setYaw(player.getLocation().getYaw());
-			Boat boat = (Boat) player.getWorld().spawnEntity(loc, EntityType.BOAT);
-			boat.setMetadata(MAMIYA_BOTA_METADATA, new FixedMetadataValue(MamiyaAssist.getPlugin(), true));
-			boat.setWoodType(woodType);
-			boat.addPassenger(player);
-			e.setCancelled(true);
-		}
+		Location loc = block.getLocation().add(0, 1, 0);
+		loc.setX(loc.getBlockX() + 0.5);
+		loc.setZ(loc.getBlockZ() + 0.5);
+		loc.setYaw(player.getLocation().getYaw());
+		
+		Boat boat = (Boat) player.getWorld().spawnEntity(loc, EntityType.BOAT);
+		boat.setMetadata(MAMIYA_BOTA_METADATA, new FixedMetadataValue(MamiyaAssist.getPlugin(), true));
+		boat.setWoodType(woodType);
+		boat.addPassenger(player);
+		
+		event.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onVehicleExit(VehicleExitEvent e){
-		Vehicle v = e.getVehicle();
-		if(v.hasMetadata(MAMIYA_BOTA_METADATA))
-			v.remove();
+		Vehicle vehicle = e.getVehicle();
+		
+		if(!(vehicle instanceof Boat)) return;
+		
+		if(vehicle.hasMetadata(MAMIYA_BOTA_METADATA)) vehicle.remove();
 	}
 
 	public void load(MamiyaAssist plugin){
-		FileConfiguration config = plugin.getCustomConfig().getConfig();
-		enable = config.getBoolean("OneClickRide.Boat.Enable");
-		water = config.getBoolean("OneClickRide.Boat.Water");
-		worlds = config.getStringList("OneClickRide.Boat.Worlds");
-		woodType = TreeSpecies.valueOf(config.getString("OneClickRide.Boat.WoodType"));
+		FileConfiguration config = plugin.getCustomConfig().config();
+		enable = config.getBoolean("Temporary boat.Enabled or not");
+		//water = config.getBoolean("Temporary boat.Water");
+		worlds = config.getStringList("Temporary boat.Target worlds");
+		woodType = TreeSpecies.valueOf(config.getString("Temporary boat.Wood type"));
 	}
 
-	public boolean isClickedWater(Player player){
+	/*public boolean isClickedWater(Player player){
 		if(!water)
 			return false;
 
@@ -132,17 +127,17 @@ public class OneClickRideListener implements Listener{
 		float f7 = f4 * f5;
 		float f8 = f3 * f5;
 		Vec3D vec3d1 = vec3d.add((double) f7 * 5.0D, (double) f6 * 5.0D, (double) f8 * 5.0D);
-		MovingObjectPosition movingobjectposition = world.rayTrace(vec3d, vec3d1, FluidCollisionOption.ALWAYS);
+		MovingObjectPosition movingobjectposition = world.rayTrace(vec3d, vec3d1, FluidCollisionOption.ANY);
 		if (movingobjectposition == null) {
 			return false;
 		} else {
 			Vec3D vec3d2 = entityhuman.f(1.0F);
 			boolean flag = false;
-			List<net.minecraft.server.v1_13_R2.Entity> list = world.getEntities(entityhuman,
+			List<net.minecraft.server.v1_15_R1.Entity> list = world.getEntities(entityhuman,
 					entityhuman.getBoundingBox().b(vec3d2.x * 5.0D, vec3d2.y * 5.0D, vec3d2.z * 5.0D).g(1.0D));
 
 			for (int event = 0; event < list.size(); ++event) {
-				net.minecraft.server.v1_13_R2.Entity blockposition = (net.minecraft.server.v1_13_R2.Entity) list.get(event);
+				net.minecraft.server.v1_15_R1.Entity blockposition = (net.minecraft.server.v1_15_R1.Entity) list.get(event);
 				if (blockposition.isInteractable()) {
 					AxisAlignedBB entityboat = blockposition.getBoundingBox().g((double) blockposition.aM());
 					if (entityboat.b(vec3d)) {
@@ -159,6 +154,6 @@ public class OneClickRideListener implements Listener{
 				return false;
 			}
 		}
-	}
+	}*/
 
 }

@@ -1,4 +1,4 @@
-package amata1219.mamiya.assist;
+package amata1219.mamiya.assist.command;
 
 import java.util.List;
 
@@ -6,30 +6,24 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.EmptyClipboardException;
-import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
-import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.bukkit.BukkitPlayer;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
-import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
-import com.sk89q.worldedit.session.ClipboardHolder;
 
-public class MamiyaCommand implements TabExecutor{
+import amata1219.mamiya.assist.MamiyaAssist;
+import amata1219.mamiya.assist.config.Config;
+import amata1219.mamiya.assist.listener.CancelBoostingElytraAtLowTPSListener;
+import amata1219.mamiya.assist.task.ControlBoostingElytraTask;
+
+public class MamiyaCommand implements CommandExecutor {
 
 	private MamiyaAssist plugin;
 	private WorldEditPlugin we;
@@ -42,16 +36,8 @@ public class MamiyaCommand implements TabExecutor{
 		this.origin = origin;
 		this.limit = limit;
 		Plugin pl = plugin.getServer().getPluginManager().getPlugin("WorldEdit");
-		if(pl instanceof WorldEditPlugin){
-			we = (WorldEditPlugin) pl;
-		}
+		if(pl instanceof WorldEditPlugin) we = (WorldEditPlugin) pl;
 		System.out.println(origin.getName());
-
-	}
-
-	@Override
-	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-		return null;
 	}
 
 	@Override
@@ -63,7 +49,6 @@ public class MamiyaCommand implements TabExecutor{
 			sender.sendMessage(ChatColor.WHITE + "MamiyaAssist " + plugin.getDescription().getVersion());
 			sender.sendMessage("");
 			sender.sendMessage(ChatColor.WHITE + "/mamiya commands で /mamiya コマンド一覧を表示");
-			sender.sendMessage(ChatColor.WHITE + "/otameshi で /otameshi コマンド一覧を表示");
 			return true;
 		}else if(args[0].equalsIgnoreCase("commands")){
 			send(ChatColor.AQUA, sender, "MamiyaAssist /mamiya コマンド一覧");
@@ -71,7 +56,7 @@ public class MamiyaCommand implements TabExecutor{
 			sender.sendMessage(ChatColor.AQUA + "/mamiya commands");
 			sender.sendMessage(ChatColor.WHITE + "[/mamiya]コマンド一覧を表示します。");
 			sender.sendMessage(ChatColor.AQUA + "/mamiya reload");
-			sender.sendMessage(ChatColor.WHITE + "[MamiyaAssist]のコンフィグを表示します。");
+			sender.sendMessage(ChatColor.WHITE + "[MamiyaAssist]のコンフィグを再読み込みします。");
 			sender.sendMessage(ChatColor.AQUA + "/mamiya booster enable [true/false]");
 			sender.sendMessage(ChatColor.WHITE + "エリトラブースターの使用制限リスナーを有効にするか設定します。");
 			sender.sendMessage(ChatColor.AQUA + "/mamiya booster interval [second]");
@@ -85,34 +70,30 @@ public class MamiyaCommand implements TabExecutor{
 			sender.sendMessage(ChatColor.AQUA + "/mamiya booster message [start/end/useCancel] [text]");
 			sender.sendMessage(ChatColor.WHITE + "各タイミングでのメッセージを設定します。startはTPSがしきい値を下回った時、endはTPSがしきい値を上回った時、useCancelはエリトラブースターの使用が制限された時になります。");
 			return true;
-		}else if(args[0].equalsIgnoreCase("debug")){
-			double[] tps = plugin.getElytraBoosterListener().getRecentTps();
-			sender.sendMessage(tps[0] + ", " + tps[1] + ", " + tps[2]);
-			return true;
 		}else if(args[0].equalsIgnoreCase("reload")){
 			plugin.getCustomConfig().reloadConfig();
-			ElytraBoosterListener listener = plugin.getElytraBoosterListener();
+			CancelBoostingElytraAtLowTPSListener listener = plugin.getElytraBoosterListener();
 			if(listener != null){
-				FileConfiguration c = plugin.getCustomConfig().getConfig();
-				listener.setAlways(c.getBoolean("ElytraBoosterUsageRestriction.Always"));
-				listener.setWorlds(c.getStringList("ElytraBoosterUsageRestriction.Worlds"));
-				listener.setTpsThreshold(c.getInt("ElytraBoosterUsageRestriction.TPSThreshold"));
-				listener.setStartMessage(c.getString("ElytraBoosterUsageRestriction.Message.Start"));
-				listener.setEndMessage(c.getString("ElytraBoosterUsageRestriction.Message.End"));
-				listener.setUseCancelMessage(c.getString("ElytraBoosterUsageRestriction.Message.UseCancel"));
+				FileConfiguration c = plugin.getCustomConfig().config();
+				listener.setAlways(c.getBoolean("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS"));
+				listener.setWorlds(c.getStringList("Restriction on elytra boosts by fireworks.Target worlds"));
+				listener.setTpsThreshold(c.getInt("Restriction on elytra boosts by fireworks.TPS Threshold to which the restriction applies"));
+				listener.setStartMessage(c.getString("Restriction on elytra boosts by fireworks.Message.When the plugin started appling the restriction"));
+				listener.setEndMessage(c.getString("Restriction on elytra boosts by fireworks.Message.When the plugin stopped appling the restriction"));
+				listener.setUseCancelMessage(c.getString("Restriction on elytra boosts by fireworks.Message.When the plugin blocked elytra boosting"));
 				listener.getElytraBoosterTask().cancel();
-				ElytraBoosterTask elytraBoosterTask = new ElytraBoosterTask(listener);
-				elytraBoosterTask.runTaskTimer(plugin, 0, c.getLong("ElytraBoosterUsageRestriction.MessageTaskInterval"));
+				ControlBoostingElytraTask elytraBoosterTask = new ControlBoostingElytraTask(listener);
+				elytraBoosterTask.runTaskTimer(plugin, 0, c.getLong("Restriction on elytra boosts by fireworks.Messaging intervals"));
 				listener.setElytraBoosterTask(elytraBoosterTask);
 			}
 			plugin.getOneClickRideListener().load(plugin);
 			send(ChatColor.AQUA, sender, "[MamiyaAssist]のコンフィグを再読み込みしました。");
 			return true;
 		}else if(args[0].equalsIgnoreCase("booster")){
-			ElytraBoosterListener listener = plugin.getElytraBoosterListener();
+			CancelBoostingElytraAtLowTPSListener listener = plugin.getElytraBoosterListener();
 			boolean n = listener == null ? true : false;
-			CustomConfig config = plugin.getCustomConfig();
-			FileConfiguration c = config.getConfig();
+			Config config = plugin.getCustomConfig();
+			FileConfiguration c = config.config();
 			if(args.length == 1){
 
 			}else if(args[1].equalsIgnoreCase("enable")){
@@ -122,16 +103,16 @@ public class MamiyaCommand implements TabExecutor{
 					return true;
 				}else if(args[2].equalsIgnoreCase("true")){
 					if(n){
-						if(c.getBoolean("ElytraBoosterUsageRestriction.Enable")){
+						if(c.getBoolean("Restriction on elytra boosts by fireworks.Enabled or not")){
 							send(ChatColor.RED, sender, "エリトラブースターの使用制限リスナーは既に有効です。");
 							return true;
 						}
-						c.set("ElytraBoosterUsageRestriction.Enable", true);
+						c.set("Restriction on elytra boosts by fireworks.Enabled or not", true);
 						config.updateConfig();
-						ElytraBoosterListener elytraBoosterListener = new ElytraBoosterListener(plugin);
+						CancelBoostingElytraAtLowTPSListener elytraBoosterListener = new CancelBoostingElytraAtLowTPSListener(plugin);
 						plugin.setElytraBoosterListener(elytraBoosterListener);
 						plugin.getServer().getPluginManager().registerEvents(elytraBoosterListener, plugin);
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Enable]を[true]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Enabled or not]を[true]に設定しました。");
 						return true;
 					}else{
 						send(ChatColor.RED, sender, "エリトラブースターの使用制限リスナーは既に有効です。");
@@ -139,13 +120,13 @@ public class MamiyaCommand implements TabExecutor{
 					}
 				}else if(args[2].equalsIgnoreCase("false")){
 					if(!n){
-						if(!c.getBoolean("ElytraBoosterUsageRestriction.Enable")){
+						if(!c.getBoolean("Restriction on elytra boosts by fireworks.Enabled or not")){
 							send(ChatColor.RED, sender, "エリトラブースターの使用制限リスナーは既に無効です。");
 							return true;
 						}
-						c.set("ElytraBoosterUsageRestriction.Enable", false);
+						c.set("Restriction on elytra boosts by fireworks.Enabled or not", false);
 						config.updateConfig();
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Enable]を[false]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Enabled or not]を[false]に設定しました。");
 						send(ChatColor.RED, sender, "値を適用するにはサーバーを再起動して下さい。");
 						return true;
 					}else{
@@ -167,18 +148,18 @@ public class MamiyaCommand implements TabExecutor{
 						return true;
 					}
 					if(n){
-						c.set("ElytraBoosterUsageRestriction.MessageTaskInterval", i);
+						c.set("Restriction on elytra boosts by fireworks.Messaging intervals", i);
 						config.updateConfig();
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.MessageTaskInterval]を[" + i + "]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Messaging intervals]を[" + i + "]に設定しました。");
 						return true;
 					}else{
-						c.set("ElytraBoosterUsageRestriction.MessageTaskInterval", i);
+						c.set("Restriction on elytra boosts by fireworks.Messaging intervals", i);
 						config.updateConfig();
 						listener.getElytraBoosterTask().cancel();
-						ElytraBoosterTask task = new ElytraBoosterTask(listener);
+						ControlBoostingElytraTask task = new ControlBoostingElytraTask(listener);
 						task.runTaskTimer(plugin, 0, i);
 						listener.setElytraBoosterTask(task);
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.MessageTaskInterval]を[" + i + "]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Messaging intervals]を[" + i + "]に設定しました。");
 						return true;
 					}
 				}
@@ -189,44 +170,44 @@ public class MamiyaCommand implements TabExecutor{
 					return true;
 				}else if(args[2].equalsIgnoreCase("true")){
 					if(n){
-						if(c.getBoolean("ElytraBoosterUsageRestriction.Always")){
+						if(c.getBoolean("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS")){
 							send(ChatColor.RED, sender, "エリトラブースターの常時使用制限は既に有効です。");
 							return true;
 						}
-						c.set("ElytraBoosterUsageRestriction.Always", true);
+						c.set("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS", true);
 						config.updateConfig();
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Always]を[true]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Applied or not regardless of TPS]を[true]に設定しました。");
 						return true;
 					}else{
-						if(c.getBoolean("ElytraBoosterUsageRestriction.Always")){
+						if(c.getBoolean("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS")){
 							send(ChatColor.RED, sender, "エリトラブースターの常時使用制限は既に有効です。");
 							return true;
 						}
-						c.set("ElytraBoosterUsageRestriction.Always", true);
+						c.set("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS", true);
 						config.updateConfig();
 						listener.setAlways(true);
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Always]を[true]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Applied or not regardless of TPS]を[true]に設定しました。");
 						return true;
 					}
 				}else if(args[2].equalsIgnoreCase("false")){
 					if(n){
-						if(!c.getBoolean("ElytraBoosterUsageRestriction.Always")){
+						if(!c.getBoolean("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS")){
 							send(ChatColor.RED, sender, "エリトラブースターの常時使用制限は既に無効です。");
 							return true;
 						}
-						c.set("ElytraBoosterUsageRestriction.Always", false);
+						c.set("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS", false);
 						config.updateConfig();
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Always]を[false]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Applied or not regardless of TPS]を[false]に設定しました。");
 						return true;
 					}else{
-						if(!c.getBoolean("ElytraBoosterUsageRestriction.Always")){
+						if(!c.getBoolean("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS")){
 							send(ChatColor.RED, sender, "エリトラブースターの常時使用制限は既に無効です。");
 							return true;
 						}
-						c.set("ElytraBoosterUsageRestriction.Always", false);
+						c.set("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS", false);
 						config.updateConfig();
 						listener.setAlways(false);
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Always]を[false]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Applied or not regardless of TPS]を[false]に設定しました。");
 						return true;
 					}
 				}
@@ -242,27 +223,27 @@ public class MamiyaCommand implements TabExecutor{
 						return true;
 					}else{
 						if(n){
-							List<String> worlds = c.getStringList("ElytraBoosterUsageRestriction.Worlds");
+							List<String> worlds = c.getStringList("Restriction on elytra boosts by fireworks.Target worlds");
 							if(worlds.contains(args[3])){
 								send(ChatColor.RED, sender, "指定されたワールドは既に追加されています。");
 								return true;
 							}
 							worlds.add(args[3]);
-							c.set("ElytraBoosterUsageRestriction.Worlds", worlds);
+							c.set("Restriction on elytra boosts by fireworks.Target worlds", worlds);
 							config.updateConfig();
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Worlds]に[" + args[3] + "]を追加しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Target worlds]に[" + args[3] + "]を追加しました。");
 							return true;
 						}else{
-							List<String> worlds = c.getStringList("ElytraBoosterUsageRestriction.Worlds");
+							List<String> worlds = c.getStringList("Restriction on elytra boosts by fireworks.Target worlds");
 							if(worlds.contains(args[3])){
 								send(ChatColor.RED, sender, "指定されたワールドは既に追加されています。");
 								return true;
 							}
 							worlds.add(args[3]);
-							c.set("ElytraBoosterUsageRestriction.Worlds", worlds);
+							c.set("Restriction on elytra boosts by fireworks.Target worlds", worlds);
 							config.updateConfig();
 							listener.getWorlds().add(args[3]);
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Worlds]に[" + args[3] + "]を追加しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Target worlds]に[" + args[3] + "]を追加しました。");
 							return true;
 						}
 					}
@@ -273,45 +254,45 @@ public class MamiyaCommand implements TabExecutor{
 						return true;
 					}else{
 						if(n){
-							List<String> worlds = c.getStringList("ElytraBoosterUsageRestriction.Worlds");
+							List<String> worlds = c.getStringList("Restriction on elytra boosts by fireworks.Target worlds");
 							if(!worlds.contains(args[3])){
 								send(ChatColor.RED, sender, "指定されたワールドは追加されていません。");
 								return true;
 							}
 							worlds.remove(args[3]);
-							c.set("ElytraBoosterUsageRestriction.Worlds", worlds);
+							c.set("Restriction on elytra boosts by fireworks.Target worlds", worlds);
 							config.updateConfig();
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Worlds]から[" + args[3] + "]を削除しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Target worlds]から[" + args[3] + "]を削除しました。");
 							return true;
 						}else{
-							List<String> worlds = c.getStringList("ElytraBoosterUsageRestriction.Worlds");
+							List<String> worlds = c.getStringList("Restriction on elytra boosts by fireworks.Target worlds");
 							if(!worlds.contains(args[3])){
 								send(ChatColor.RED, sender, "指定されたワールドは追加されていません。");
 								return true;
 							}
 							worlds.remove(args[3]);
-							c.set("ElytraBoosterUsageRestriction.Worlds", worlds);
+							c.set("Restriction on elytra boosts by fireworks.Target worlds", worlds);
 							config.updateConfig();
 							listener.getWorlds().remove(args[3]);
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Worlds]から[" + args[3] + "]を削除しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Target worlds]から[" + args[3] + "]を削除しました。");
 							return true;
 						}
 					}
 				}else if(args[2].equalsIgnoreCase("clear")){
 					if(n){
-						List<String> worlds = c.getStringList("ElytraBoosterUsageRestriction.Worlds");
+						List<String> worlds = c.getStringList("Restriction on elytra boosts by fireworks.Target worlds");
 						worlds.clear();
-						c.set("ElytraBoosterUsageRestriction.Worlds", worlds);
+						c.set("Restriction on elytra boosts by fireworks.Target worlds", worlds);
 						config.updateConfig();
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Worlds]をクリアしました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Target worlds]をクリアしました。");
 						return true;
 					}else{
-						List<String> worlds = c.getStringList("ElytraBoosterUsageRestriction.Worlds");
+						List<String> worlds = c.getStringList("Restriction on elytra boosts by fireworks.Target worlds");
 						worlds.clear();
-						c.set("ElytraBoosterUsageRestriction.Worlds", worlds);
+						c.set("Restriction on elytra boosts by fireworks.Target worlds", worlds);
 						config.updateConfig();
 						listener.getWorlds().clear();
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Worlds]をクリアしました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Target worlds]をクリアしました。");
 						return true;
 					}
 				}
@@ -329,15 +310,15 @@ public class MamiyaCommand implements TabExecutor{
 						return true;
 					}
 					if(n){
-						c.set("ElytraBoosterUsageRestriction.TPSThreshold", i);
+						c.set("Restriction on elytra boosts by fireworks.TPS Threshold to which the restriction applies", i);
 						config.updateConfig();
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.TPSThreshold]を[" + i + "]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.TPS Threshold to which the restriction applies]を[" + i + "]に設定しました。");
 						return true;
 					}else{
-						c.set("ElytraBoosterUsageRestriction.TPSThreshold", i);
+						c.set("Restriction on elytra boosts by fireworks.TPS Threshold to which the restriction applies", i);
 						config.updateConfig();
 						listener.setTpsThreshold(i);
-						send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.TPSThreshold]を[" + i + "]に設定しました。");
+						send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.TPS Threshold to which the restriction applies]を[" + i + "]に設定しました。");
 						return true;
 					}
 				}
@@ -358,15 +339,15 @@ public class MamiyaCommand implements TabExecutor{
 						}
 						String s = sb.toString().trim();
 						if(n){
-							c.set("ElytraBoosterUsageRestriction.Message.Start", s);
+							c.set("Restriction on elytra boosts by fireworks.Message.When the plugin started appling the restriction", s);
 							config.updateConfig();
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Message.Start]を[" + s + "]に設定しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Message.When the plugin started appling the restriction]を[" + s + "]に設定しました。");
 							return true;
 						}else{
-							c.set("ElytraBoosterUsageRestriction.Message.Start", s);
+							c.set("Restriction on elytra boosts by fireworks.Message.When the plugin started appling the restriction", s);
 							config.updateConfig();
 							listener.setStartMessage(s);
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Message.Start]を[" + s + "]に設定しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Message.When the plugin started appling the restriction]を[" + s + "]に設定しました。");
 							return true;
 						}
 					}
@@ -382,15 +363,15 @@ public class MamiyaCommand implements TabExecutor{
 						}
 						String s = sb.toString().trim();
 						if(n){
-							c.set("ElytraBoosterUsageRestriction.Message.End", s);
+							c.set("Restriction on elytra boosts by fireworks.Message.When the plugin stopped appling the restriction", s);
 							config.updateConfig();
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Message.End]を[" + s + "]に設定しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Message.When the plugin stopped appling the restriction]を[" + s + "]に設定しました。");
 							return true;
 						}else{
-							c.set("ElytraBoosterUsageRestriction.Message.End", s);
+							c.set("Restriction on elytra boosts by fireworks.Message.When the plugin stopped appling the restriction", s);
 							config.updateConfig();
 							listener.setEndMessage(s);
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Message.End]を[" + s + "]に設定しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Message.When the plugin stopped appling the restriction]を[" + s + "]に設定しました。");
 							return true;
 						}
 					}
@@ -406,15 +387,15 @@ public class MamiyaCommand implements TabExecutor{
 						}
 						String s = sb.toString().trim();
 						if(n){
-							c.set("ElytraBoosterUsageRestriction.Message.UseCancel", s);
+							c.set("Restriction on elytra boosts by fireworks.Message.When the plugin blocked elytra boosting", s);
 							config.updateConfig();
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Message.UseCancel]を[" + s + "]に設定しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Message.When the plugin blocked elytra boosting]を[" + s + "]に設定しました。");
 							return true;
 						}else{
-							c.set("ElytraBoosterUsageRestriction.Message.UseCancel", s);
+							c.set("Restriction on elytra boosts by fireworks.Message.When the plugin blocked elytra boosting", s);
 							config.updateConfig();
 							listener.setUseCancelMessage(s);
-							send(ChatColor.AQUA, sender, "[ElytraBoosterUsageRestriction.Message.UseCancel]を[" + s + "]に設定しました。");
+							send(ChatColor.AQUA, sender, "[Restriction on elytra boosts by fireworks.Message.When the plugin blocked elytra boosting]を[" + s + "]に設定しました。");
 							return true;
 						}
 					}
@@ -462,7 +443,7 @@ public class MamiyaCommand implements TabExecutor{
 				return true;
 			}
 
-			BukkitPlayer user = we.wrapPlayer(player);
+			//BukkitPlayer user = we.wrapPlayer(player);
 
 			region.setWorld(BukkitAdapter.adapt(origin));
 			/*BlockArrayClipboard clipboard = new BlockArrayClipboard(region);

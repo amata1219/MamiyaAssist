@@ -1,34 +1,37 @@
-ElytraBoosterUsageRestriction:
-  Enable: true
-  MessageTaskInterval: 300
-#Unit is seconds.
-  Always: false
-  Worlds:
+'Restriction on elytra boosts by fireworks':
+  'Enabled or not': true
+  'Messaging intervals': 300
+  #The unit are in seconds.
+  'Applied or not regardless of TPS': false
+  'Target worlds':
     - world
     - world_nether
     - world_the_end
     - shigen
     - shigen2
-#If "- ALL" is added, the whole world will be covered.
-  TPSThreshold: 16
-  Message:
-    Start: "StartMessage"
-    End: "EndMessage"
-    UseCancel: "UseCancel"
-OneClickRide:
-  Boat:
-    Enable: true
-    Water: true
-    Worlds:
-      - world
-      - world_nether
-      - world_the_end
-      - shigen
-      - shigen2
-#If "- ALL" is added, the whole world will be covered.
-    WoodType: "GENERIC"
-#WoodTypes: ACACIA, BIRTH, DARK_OAK, GENERIC, JUNGLE, REDWOOD
-#Javadoc(TreeSpecies): https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/TreeSpecies.html
-Regen:
-  OriginWorld: "origin"
-  Limit: 100000
+  #If you add "- ALL", all worlds will be included.
+  'TPS Threshold to which the restriction applies': 16
+  'Message':
+    'When the plugin started appling the restriction': "TPS減少のため、エリトラブースター制限を実施します！"
+    'When the plugin stopped appling the restriction': "TPSが復活しましたのでエリトラブースター制限を解除します。ご協力ありがとうございました！"
+    'When the plugin blocked elytra boosting': "只今エリトラブースター制限が実施されています。ご不便お掛けしますがご協力お願いします。"
+'Temporary boat':
+  'Enabled or not': true
+  'Target worlds':
+    - world
+    - world_nether
+    - world_the_end
+    - shigen
+    - shigen2
+  #If you add "- ALL", all worlds will be included.
+  'Wood type': "GENERIC"
+  #WoodTypes: ACACIA, BIRTH, DARK_OAK, GENERIC, JUNGLE, REDWOOD, RANDOM
+  #Javadoc(TreeSpecies): https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/TreeSpecies.html
+'Regeneration of region':
+  'Origin world': "origin"
+  'Maximum number of blocks that can be targeted': 100000
+'Kicking AFKer':
+  'Enabled or not': true
+  'AFKed time required for kicks': 5
+  #The unit are in minutes.
+  'Message to send when the plugin kick AFKer': "放置状態で一定時間が経過したためキックされました。"

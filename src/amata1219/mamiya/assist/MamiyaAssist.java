@@ -3,36 +3,45 @@ package amata1219.mamiya.assist;
 import java.util.HashMap;
 
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import amata1219.mamiya.assist.command.MamiyaCommand;
+import amata1219.mamiya.assist.config.Config;
+import amata1219.mamiya.assist.listener.CancelBoostingElytraAtLowTPSListener;
+import amata1219.mamiya.assist.listener.ClickToSummonBoatListener;
+
 public class MamiyaAssist extends JavaPlugin{
 
 	private static MamiyaAssist plugin;
 
-	private CustomConfig config;
-	private ElytraBoosterListener elytraBoosterListener;
-	private OneClickRideListener oneClickRideListener;
+	private Config config;
+	private CancelBoostingElytraAtLowTPSListener boostingListener;
+	private ClickToSummonBoatListener boatListener;
 
-	private HashMap<String, TabExecutor> commands;
+	private HashMap<String, CommandExecutor> commands;
 
 	@Override
 	public void onEnable(){
 		plugin = this;
-		config = new CustomConfig(plugin);
+		
+		config = new Config(plugin);
 		config.saveDefaultConfig();
-		FileConfiguration conf = config.getConfig();
-		commands = new HashMap<String, TabExecutor>();
+		
+		FileConfiguration conf = config.config();
+		commands = new HashMap<String, CommandExecutor>();
 		commands.put("mamiya", new MamiyaCommand(plugin, getServer().getWorld(conf.getString("Regen.OriginWorld")), conf.getInt("Regen.Limit")));
+		
 		PluginManager manager = getServer().getPluginManager();
-		if(conf.getBoolean("ElytraBoosterUsageRestriction.Enable"))
-			manager.registerEvents(elytraBoosterListener = new ElytraBoosterListener(plugin), plugin);
-		if( conf.getBoolean("OneClickRide.Boat.Enable"))
-			manager.registerEvents(oneClickRideListener = new OneClickRideListener(plugin), plugin);
+		if(conf.getBoolean("Restriction on elytra boosts by fireworks.Enabled or not"))
+			manager.registerEvents(boostingListener = new CancelBoostingElytraAtLowTPSListener(plugin), plugin);
+		
+		if(conf.getBoolean("Temporary boat.Enabled or not"))
+			manager.registerEvents(boatListener = new ClickToSummonBoatListener(plugin), plugin);
 	}
 
 	@Override
@@ -49,20 +58,20 @@ public class MamiyaAssist extends JavaPlugin{
 		return plugin;
 	}
 
-	public CustomConfig getCustomConfig(){
+	public Config getCustomConfig(){
 		return config;
 	}
 
-	public void setElytraBoosterListener(ElytraBoosterListener elytraBoosterListener) {
-		this.elytraBoosterListener = elytraBoosterListener;
+	public void setElytraBoosterListener(CancelBoostingElytraAtLowTPSListener elytraBoosterListener) {
+		this.boostingListener = elytraBoosterListener;
 	}
 
-	public ElytraBoosterListener getElytraBoosterListener() {
-		return elytraBoosterListener;
+	public CancelBoostingElytraAtLowTPSListener getElytraBoosterListener() {
+		return boostingListener;
 	}
 
-	public OneClickRideListener getOneClickRideListener(){
-		return oneClickRideListener;
+	public ClickToSummonBoatListener getOneClickRideListener(){
+		return boatListener;
 	}
 
 }
