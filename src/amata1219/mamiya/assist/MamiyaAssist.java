@@ -9,17 +9,15 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import amata1219.mamiya.assist.command.MamiyaCommand;
-import amata1219.mamiya.assist.config.Config;
 import amata1219.mamiya.assist.listener.CancelBoostingElytraAtLowTPSListener;
 import amata1219.mamiya.assist.listener.TemporaryBoatListener;
 
-public class MamiyaAssist extends JavaPlugin{
+public class MamiyaAssist extends JavaPlugin {
 
 	private static MamiyaAssist plugin;
 
@@ -36,8 +34,6 @@ public class MamiyaAssist extends JavaPlugin{
 			throw new NullPointerException("[MamiyaAssist] Not found WorldEdit");
 		
 		commands.put("mamiya", new MamiyaCommand((WorldEditPlugin) maybeWe));
-		
-		if(conf.getBoolean("Temporary boat.Enabled or not"))
 		
 		registerListeners(
 			new CancelBoostingElytraAtLowTPSListener(),

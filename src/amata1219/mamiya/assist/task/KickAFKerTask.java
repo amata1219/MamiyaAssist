@@ -4,11 +4,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import amata1219.mamiya.assist.MamiyaAssist;
-import amata1219.mamiya.assist.config.Config;
 
 public class KickAFKerTask extends BukkitRunnable {
 	
-	private final Config config = MamiyaAssist.getPlugin().getCustomConfig();
+	private final MamiyaAssist plugin = MamiyaAssist.getPlugin();
+
 	private final Player player;
 	private int elapsedMinutes;
 	
@@ -20,7 +20,15 @@ public class KickAFKerTask extends BukkitRunnable {
 	public void run() {
 		elapsedMinutes++;
 		
-		if(elapsedMinutes >= ?) player.kickPlayer("");
+		if(elapsedMinutes >= afkedTimeRequiredForKicks()) player.kickPlayer(kickMessage());
+	}
+	
+	private int afkedTimeRequiredForKicks(){
+		return plugin.config().getInt("Kicking AFKer.AFKed time required for kicks");
+	}
+	
+	private String kickMessage(){
+		return plugin.config().getString("Kicking AFKer.Message to send when the plugin kick AFKer");
 	}
 
 }
