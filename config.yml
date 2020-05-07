@@ -27,9 +27,9 @@
   'Wood type': "GENERIC"
   #WoodTypes: ACACIA, BIRTH, DARK_OAK, GENERIC, JUNGLE, REDWOOD, RANDOM
   #Javadoc(TreeSpecies): https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/TreeSpecies.html
-'Regeneration of region':
+'Regeneration of regions':
   'Origin world': "origin"
-  'Maximum number of blocks that can be targeted': 100000
+  'Maximum number of blocks that can be regenerated': 100000
 'Kicking AFKer':
   'Enabled or not': true
   'AFKed time required for kicks': 5

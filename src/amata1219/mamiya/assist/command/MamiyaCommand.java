@@ -25,19 +25,11 @@ import amata1219.mamiya.assist.task.ControlBoostingElytraTask;
 
 public class MamiyaCommand implements CommandExecutor {
 
-	private MamiyaAssist plugin;
-	private WorldEditPlugin we;
+	private final MamiyaAssist plugin = MamiyaAssist.getPlugin();
+	private final WorldEditPlugin we;
 
-	private World origin;
-	private int limit;
-
-	public MamiyaCommand(MamiyaAssist plugin, World origin, int limit){
-		this.plugin = plugin;
-		this.origin = origin;
-		this.limit = limit;
-		Plugin pl = plugin.getServer().getPluginManager().getPlugin("WorldEdit");
-		if(pl instanceof WorldEditPlugin) we = (WorldEditPlugin) pl;
-		System.out.println(origin.getName());
+	public MamiyaCommand(WorldEditPlugin we){
+		this.we = we;
 	}
 
 	@Override
@@ -438,12 +430,14 @@ public class MamiyaCommand implements CommandExecutor {
 			}
 
 			int volume = region.getWidth() * region.getHeight() * region.getLength();
-			if(volume > limit){
+			if(volume > plugin.config().getInt("Regeneration of regions.Maximum number of blocks that can be regenerated")){
 				send(ChatColor.RED, sender, "指定された範囲が大きすぎます(" + volume + ")。上限は" + limit + "ブロックです。");
 				return true;
 			}
 
 			//BukkitPlayer user = we.wrapPlayer(player);
+			
+			World origin = Bukkit.getWorld(plugin.config().getString("Regeneration of regions.Origin world"));
 
 			region.setWorld(BukkitAdapter.adapt(origin));
 			/*BlockArrayClipboard clipboard = new BlockArrayClipboard(region);

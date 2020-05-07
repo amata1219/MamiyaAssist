@@ -7,8 +7,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import amata1219.mamiya.assist.command.MamiyaCommand;
 import amata1219.mamiya.assist.config.Config;
@@ -19,22 +22,22 @@ public class MamiyaAssist extends JavaPlugin{
 
 	private static MamiyaAssist plugin;
 
-	private Config config;
 	private CancelBoostingElytraAtLowTPSListener boostingListener;
 	private ClickToSummonBoatListener boatListener;
 
-	private HashMap<String, CommandExecutor> commands;
+	private final HashMap<String, CommandExecutor> commands = new HashMap<>();
 
 	@Override
 	public void onEnable(){
 		plugin = this;
 		
-		config = new Config(plugin);
-		config.saveDefaultConfig();
+		saveDefaultConfig();
 		
-		FileConfiguration conf = config.config();
-		commands = new HashMap<String, CommandExecutor>();
-		commands.put("mamiya", new MamiyaCommand(plugin, getServer().getWorld(conf.getString("Regen.OriginWorld")), conf.getInt("Regen.Limit")));
+		Plugin maybeWe = plugin.getServer().getPluginManager().getPlugin("WorldEdit");
+		if(!(maybeWe instanceof WorldEditPlugin))
+			throw new NullPointerException("[MamiyaAssist] Not found WorldEdit");
+		
+		commands.put("mamiya", new MamiyaCommand((WorldEditPlugin) maybeWe));
 		
 		PluginManager manager = getServer().getPluginManager();
 		if(conf.getBoolean("Restriction on elytra boosts by fireworks.Enabled or not"))
@@ -57,11 +60,11 @@ public class MamiyaAssist extends JavaPlugin{
 	public static MamiyaAssist getPlugin(){
 		return plugin;
 	}
-
-	public Config getCustomConfig(){
-		return config;
+	
+	public FileConfiguration config(){
+		return getConfig();
 	}
-
+	
 	public void setElytraBoosterListener(CancelBoostingElytraAtLowTPSListener elytraBoosterListener) {
 		this.boostingListener = elytraBoosterListener;
 	}

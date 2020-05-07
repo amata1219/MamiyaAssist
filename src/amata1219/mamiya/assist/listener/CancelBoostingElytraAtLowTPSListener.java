@@ -4,28 +4,26 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitTask;
 
 import amata1219.mamiya.assist.MamiyaAssist;
 import amata1219.mamiya.assist.Reflection;
 import amata1219.mamiya.assist.task.ControlBoostingElytraTask;
 
-public class CancelBoostingElytraAtLowTPSListener implements Listener{
+public class CancelBoostingElytraAtLowTPSListener implements Listener {
+	
+	private final MamiyaAssist plugin = MamiyaAssist.getPlugin();
 
 	private double[] recentTps;
 
 	private ControlBoostingElytraTask elytraBoosterTask;
-
-	private boolean appliedOrNotRegardlessOfTPS;
-	private List<String> targetWorlds;
-	private int tpsThreshold;
-	private String startMessage, endMessage, useCancelMessage;
+	private BukkitTask runningTask;
 
 	public CancelBoostingElytraAtLowTPSListener(MamiyaAssist plugin){
 		Class<?> CraftServer = Reflection.getReflectionClass("org.bukkit.craftbukkit.v" +plugin. getServer().getClass().getPackage().getName().replaceFirst(".*(\\d+_\\d+_R\\d+).*", "$1") + "." + "CraftServer");
@@ -40,20 +38,15 @@ public class CancelBoostingElytraAtLowTPSListener implements Listener{
 		Field field = Reflection.getReflectionSuperField(castObj, "recentTps");
 		recentTps = (double[]) Reflection.getReflectionValue(field, castObj);
 		
-		FileConfiguration config = plugin.getCustomConfig().config();
-		
-		appliedOrNotRegardlessOfTPS = config.getBoolean("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS");
-		targetWorlds = config.getStringList("Restriction on elytra boosts by fireworks.Target worlds");
-		tpsThreshold = config.getInt("Restriction on elytra boosts by fireworks.TPS Threshold to which the restriction applies");
-		startMessage = config.getString("Restriction on elytra boosts by fireworks.Message.When the plugin started appling the restriction");
-		endMessage = config.getString("Restriction on elytra boosts by fireworks.Message.When the plugin stopped appling the restriction");
-		useCancelMessage = config.getString("Restriction on elytra boosts by fireworks.Message.When the plugin blocked elytra boosting");
-		elytraBoosterTask = new ControlBoostingElytraTask(this);
-		elytraBoosterTask.runTaskTimer(plugin, 0, config.getLong("Restriction on elytra boosts by fireworks.Messaging intervals") * 20);
+		elytraBoosterTask = new ControlBoostingElytraTask();
+		int intervals = plugin.config().getInt("Restriction on elytra boosts by fireworks.Messaging intervals");
+		runningTask = elytraBoosterTask.runTaskTimer(plugin, 0, intervals * 20);
 	}
 
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event){
+		if(!isEnabled()) return;
+		
 		Action action = event.getAction();
 		if(action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
 		
@@ -63,14 +56,20 @@ public class CancelBoostingElytraAtLowTPSListener implements Listener{
 		ItemStack item = event.getItem();
 		if(item == null || item.getType() != Material.FIREWORK_ROCKET) return;
 		
-		if(!appliedOrNotRegardlessOfTPS && recentTps[0] > tpsThreshold) return;
+		if(!isAppliedRegardlessOfTPS() && !elytraBoosterTask.isRestricting()) return;
 		
+		List<String> targetWorlds = targetWorlds();
 		if(!targetWorlds.contains(player.getWorld().getName()) && !targetWorlds.contains("ALL")) return;
 		
 		event.setCancelled(true);
-		player.sendMessage(useCancelMessage);
+		
+		player.sendMessage(cancelMessage());
 	}
 
+	private boolean isEnabled(){
+		return plugin.config().getBoolean("Restriction on elytra boosts by fireworks.Enabled or not");
+	}
+	
 	public double[] getRecentTps() {
 		return recentTps;
 	}
@@ -79,56 +78,20 @@ public class CancelBoostingElytraAtLowTPSListener implements Listener{
 		this.elytraBoosterTask = elytraBoosterTask;
 	}
 
-	public ControlBoostingElytraTask getElytraBoosterTask() {
-		return elytraBoosterTask;
+	public BukkitTask task() {
+		return runningTask;
 	}
 
-	public boolean isAlways() {
-		return appliedOrNotRegardlessOfTPS;
+	private boolean isAppliedRegardlessOfTPS() {
+		return plugin.config().getBoolean("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS");
 	}
 
-	public void setAlways(boolean always) {
-		this.appliedOrNotRegardlessOfTPS = always;
+	private List<String> targetWorlds() {
+		return plugin.config().getStringList("Restriction on elytra boosts by fireworks.Target worlds");
 	}
 
-	public List<String> getWorlds() {
-		return targetWorlds;
-	}
-
-	public void setWorlds(List<String> worlds) {
-		this.targetWorlds = worlds;
-	}
-
-	public int getTpsThreshold() {
-		return tpsThreshold;
-	}
-
-	public void setTpsThreshold(int tpsThreshold) {
-		this.tpsThreshold = tpsThreshold;
-	}
-
-	public String getStartMessage() {
-		return startMessage;
-	}
-
-	public void setStartMessage(String startMessage) {
-		this.startMessage = startMessage;
-	}
-
-	public String getEndMessage() {
-		return endMessage;
-	}
-
-	public void setEndMessage(String endMessage) {
-		this.endMessage = endMessage;
-	}
-
-	public String getUseCancelMessage() {
-		return useCancelMessage;
-	}
-
-	public void setUseCancelMessage(String useCancelMessage) {
-		this.useCancelMessage = useCancelMessage;
+	private String cancelMessage() {
+		return plugin.config().getString("Restriction on elytra boosts by fireworks.Message.When the plugin blocked elytra boosting");
 	}
 
 }
