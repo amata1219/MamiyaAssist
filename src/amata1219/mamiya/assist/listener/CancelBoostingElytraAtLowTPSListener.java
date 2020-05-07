@@ -25,7 +25,7 @@ public class CancelBoostingElytraAtLowTPSListener implements Listener {
 	private ControlBoostingElytraTask elytraBoosterTask;
 	private BukkitTask runningTask;
 
-	public CancelBoostingElytraAtLowTPSListener(MamiyaAssist plugin){
+	public CancelBoostingElytraAtLowTPSListener(){
 		Class<?> CraftServer = Reflection.getReflectionClass("org.bukkit.craftbukkit.v" +plugin. getServer().getClass().getPackage().getName().replaceFirst(".*(\\d+_\\d+_R\\d+).*", "$1") + "." + "CraftServer");
 		Object getCraftServer = CraftServer.cast(plugin.getServer());
 		

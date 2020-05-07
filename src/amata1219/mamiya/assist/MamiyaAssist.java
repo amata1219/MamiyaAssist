@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -16,14 +17,11 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import amata1219.mamiya.assist.command.MamiyaCommand;
 import amata1219.mamiya.assist.config.Config;
 import amata1219.mamiya.assist.listener.CancelBoostingElytraAtLowTPSListener;
-import amata1219.mamiya.assist.listener.ClickToSummonBoatListener;
+import amata1219.mamiya.assist.listener.TemporaryBoatListener;
 
 public class MamiyaAssist extends JavaPlugin{
 
 	private static MamiyaAssist plugin;
-
-	private CancelBoostingElytraAtLowTPSListener boostingListener;
-	private ClickToSummonBoatListener boatListener;
 
 	private final HashMap<String, CommandExecutor> commands = new HashMap<>();
 
@@ -39,12 +37,12 @@ public class MamiyaAssist extends JavaPlugin{
 		
 		commands.put("mamiya", new MamiyaCommand((WorldEditPlugin) maybeWe));
 		
-		PluginManager manager = getServer().getPluginManager();
-		if(conf.getBoolean("Restriction on elytra boosts by fireworks.Enabled or not"))
-			manager.registerEvents(boostingListener = new CancelBoostingElytraAtLowTPSListener(plugin), plugin);
-		
 		if(conf.getBoolean("Temporary boat.Enabled or not"))
-			manager.registerEvents(boatListener = new ClickToSummonBoatListener(plugin), plugin);
+		
+		registerListeners(
+			new CancelBoostingElytraAtLowTPSListener(),
+			new TemporaryBoatListener()
+		);
 	}
 
 	@Override
@@ -65,16 +63,8 @@ public class MamiyaAssist extends JavaPlugin{
 		return getConfig();
 	}
 	
-	public void setElytraBoosterListener(CancelBoostingElytraAtLowTPSListener elytraBoosterListener) {
-		this.boostingListener = elytraBoosterListener;
+	private void registerListeners(Listener... listeners){
+		for(Listener listener : listeners) getServer().getPluginManager().registerEvents(listener, this);
 	}
-
-	public CancelBoostingElytraAtLowTPSListener getElytraBoosterListener() {
-		return boostingListener;
-	}
-
-	public ClickToSummonBoatListener getOneClickRideListener(){
-		return boatListener;
-	}
-
+	
 }
