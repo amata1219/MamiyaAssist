@@ -1,5 +1,6 @@
 package amata1219.mamiya.assist;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.command.Command;
@@ -10,6 +11,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
@@ -23,7 +25,8 @@ public class MamiyaAssist extends JavaPlugin {
 	private static MamiyaAssist plugin;
 
 	private final HashMap<String, CommandExecutor> commands = new HashMap<>();
-
+	private final ArrayList<BukkitTask> activeTasks = new ArrayList<>();
+	
 	@Override
 	public void onEnable(){
 		plugin = this;
@@ -35,15 +38,22 @@ public class MamiyaAssist extends JavaPlugin {
 		
 		commands.put("mamiya", new MamiyaCommand((WorldEditPlugin) maybeWe));
 		
+		CancelBoostingElytraListener l0 = new CancelBoostingElytraListener();
+		KickAFKerListener l1 = new KickAFKerListener();
+		
+		activeTasks.add(l0.activate());
+		activeTasks.add(l1.activate());
+		
 		registerListeners(
-			new CancelBoostingElytraListener(),
+			l0,
 			new TemporaryBoatListener(),
-			new KickAFKerListener()
+			l1
 		);
 	}
 
 	@Override
 	public void onDisable(){
+		activeTasks.forEach(BukkitTask::cancel);
 		HandlerList.unregisterAll((JavaPlugin) this);
 	}
 
