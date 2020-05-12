@@ -22,6 +22,7 @@ import amata1219.mamiya.assist.listener.TemporaryBoatListener;
 
 public class MamiyaAssist extends JavaPlugin {
 
+	
 	private static MamiyaAssist plugin;
 
 	private final HashMap<String, CommandExecutor> commands = new HashMap<>();
