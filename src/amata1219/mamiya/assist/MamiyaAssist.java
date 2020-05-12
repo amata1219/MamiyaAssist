@@ -30,7 +30,7 @@ public class MamiyaAssist extends JavaPlugin {
 		
 		saveDefaultConfig();
 		
-		Plugin maybeWe = plugin.getServer().getPluginManager().getPlugin("WorldEdit");
+		Plugin maybeWe = getServer().getPluginManager().getPlugin("WorldEdit");
 		if(!(maybeWe instanceof WorldEditPlugin)) throw new NullPointerException("[MamiyaAssist] Not found WorldEdit");
 		
 		commands.put("mamiya", new MamiyaCommand((WorldEditPlugin) maybeWe));
