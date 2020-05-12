@@ -7,7 +7,7 @@ import amata1219.mamiya.assist.MamiyaAssist;
 
 public class KickAFKerTask extends BukkitRunnable {
 	
-	private final MamiyaAssist plugin = MamiyaAssist.getPlugin();
+	private final MamiyaAssist plugin = MamiyaAssist.plugin();
 
 	private final Player player;
 	private int elapsedMinutes;

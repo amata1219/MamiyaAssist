@@ -18,7 +18,7 @@ import amata1219.mamiya.assist.task.ControlBoostingElytraTask;
 
 public class CancelBoostingElytraAtLowTPSListener implements Listener {
 	
-	private final MamiyaAssist plugin = MamiyaAssist.getPlugin();
+	private final MamiyaAssist plugin = MamiyaAssist.plugin();
 
 	private double[] recentTps;
 

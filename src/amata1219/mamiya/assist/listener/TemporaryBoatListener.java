@@ -1,5 +1,7 @@
 package amata1219.mamiya.assist.listener;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -24,11 +26,11 @@ import amata1219.mamiya.assist.MamiyaAssist;
 public class TemporaryBoatListener implements Listener {
 	
 	public static final String MAMIYA_BOTA_METADATA = "mamiya-boat";
+	private static final List<TreeSpecies> TREE_SPECIES = Collections.unmodifiableList(Arrays.asList(TreeSpecies.values()));
+	private static final Random RAND = new Random();
 	
-	private final MamiyaAssist plugin = MamiyaAssist.getPlugin();
+	private final MamiyaAssist plugin = MamiyaAssist.plugin();
 	
-	private final Random rand = new Random();
-
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event){
 		if(!isEnabled()) return;
@@ -58,8 +60,7 @@ public class TemporaryBoatListener implements Listener {
 		Boat boat = (Boat) player.getWorld().spawnEntity(loc, EntityType.BOAT);
 		boat.setMetadata(MAMIYA_BOTA_METADATA, new FixedMetadataValue(plugin, true));
 		
-		TreeSpecies[] species = TreeSpecies.values();
-		boat.setWoodType(species[rand.nextInt(species.length)]);
+		boat.setWoodType(TREE_SPECIES.get(RAND.nextInt(TREE_SPECIES.size())));
 		
 		boat.addPassenger(player);
 		

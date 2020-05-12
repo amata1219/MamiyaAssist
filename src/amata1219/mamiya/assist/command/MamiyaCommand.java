@@ -1,17 +1,12 @@
 package amata1219.mamiya.assist.command;
 
-import java.util.List;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -19,13 +14,10 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionSelector;
 
 import amata1219.mamiya.assist.MamiyaAssist;
-import amata1219.mamiya.assist.config.Config;
-import amata1219.mamiya.assist.listener.CancelBoostingElytraAtLowTPSListener;
-import amata1219.mamiya.assist.task.ControlBoostingElytraTask;
 
 public class MamiyaCommand implements CommandExecutor {
 
-	private final MamiyaAssist plugin = MamiyaAssist.getPlugin();
+	private final MamiyaAssist plugin = MamiyaAssist.plugin();
 	private final WorldEditPlugin we;
 
 	public MamiyaCommand(WorldEditPlugin we){
@@ -49,7 +41,7 @@ public class MamiyaCommand implements CommandExecutor {
 			sender.sendMessage(ChatColor.WHITE + "[/mamiya]コマンド一覧を表示します。");
 			sender.sendMessage(ChatColor.AQUA + "/mamiya reload");
 			sender.sendMessage(ChatColor.WHITE + "[MamiyaAssist]のコンフィグを再読み込みします。");
-			sender.sendMessage(ChatColor.AQUA + "/mamiya booster enable [true/false]");
+			/*sender.sendMessage(ChatColor.AQUA + "/mamiya booster enable [true/false]");
 			sender.sendMessage(ChatColor.WHITE + "エリトラブースターの使用制限リスナーを有効にするか設定します。");
 			sender.sendMessage(ChatColor.AQUA + "/mamiya booster interval [second]");
 			sender.sendMessage(ChatColor.WHITE + "エリトラブースターのTPS確認間隔を設定します。単位は秒です。値は半角数字で入力して下さい。");
@@ -60,32 +52,14 @@ public class MamiyaCommand implements CommandExecutor {
 			sender.sendMessage(ChatColor.AQUA + "/mamiya booster threshold [tps]");
 			sender.sendMessage(ChatColor.WHITE + "エリトラブースターの使用制限目安となるTPSしきい値を設定します。値は半角数字で入力して下さい。");
 			sender.sendMessage(ChatColor.AQUA + "/mamiya booster message [start/end/useCancel] [text]");
-			sender.sendMessage(ChatColor.WHITE + "各タイミングでのメッセージを設定します。startはTPSがしきい値を下回った時、endはTPSがしきい値を上回った時、useCancelはエリトラブースターの使用が制限された時になります。");
+			sender.sendMessage(ChatColor.WHITE + "各タイミングでのメッセージを設定します。startはTPSがしきい値を下回った時、endはTPSがしきい値を上回った時、useCancelはエリトラブースターの使用が制限された時になります。");*/
 			return true;
 		}else if(args[0].equalsIgnoreCase("reload")){
-			plugin.getCustomConfig().reloadConfig();
-			CancelBoostingElytraAtLowTPSListener listener = plugin.getElytraBoosterListener();
-			if(listener != null){
-				FileConfiguration c = plugin.getCustomConfig().config();
-				listener.setAlways(c.getBoolean("Restriction on elytra boosts by fireworks.Applied or not regardless of TPS"));
-				listener.setWorlds(c.getStringList("Restriction on elytra boosts by fireworks.Target worlds"));
-				listener.setTpsThreshold(c.getInt("Restriction on elytra boosts by fireworks.TPS Threshold to which the restriction applies"));
-				listener.setStartMessage(c.getString("Restriction on elytra boosts by fireworks.Message.When the plugin started appling the restriction"));
-				listener.setEndMessage(c.getString("Restriction on elytra boosts by fireworks.Message.When the plugin stopped appling the restriction"));
-				listener.setUseCancelMessage(c.getString("Restriction on elytra boosts by fireworks.Message.When the plugin blocked elytra boosting"));
-				listener.getElytraBoosterTask().cancel();
-				ControlBoostingElytraTask elytraBoosterTask = new ControlBoostingElytraTask(listener);
-				elytraBoosterTask.runTaskTimer(plugin, 0, c.getLong("Restriction on elytra boosts by fireworks.Messaging intervals"));
-				listener.setElytraBoosterTask(elytraBoosterTask);
-			}
-			plugin.getOneClickRideListener().load(plugin);
+			plugin.reloadConfig();
 			send(ChatColor.AQUA, sender, "[MamiyaAssist]のコンフィグを再読み込みしました。");
 			return true;
-		}else if(args[0].equalsIgnoreCase("booster")){
-			CancelBoostingElytraAtLowTPSListener listener = plugin.getElytraBoosterListener();
-			boolean n = listener == null ? true : false;
-			Config config = plugin.getCustomConfig();
-			FileConfiguration c = config.config();
+		/*}else if(args[0].equalsIgnoreCase("booster")){
+			FileConfiguration c = plugin.config();
 			if(args.length == 1){
 
 			}else if(args[1].equalsIgnoreCase("enable")){
@@ -393,7 +367,7 @@ public class MamiyaCommand implements CommandExecutor {
 					}
 				}
 			}
-		}else if(args[0].equalsIgnoreCase("regen")){
+		*/}else if(args[0].equalsIgnoreCase("regen")){
 			if(!(sender instanceof Player)){
 				send(ChatColor.RED, sender, "ゲーム内から実行してください。");
 				return true;
@@ -430,7 +404,8 @@ public class MamiyaCommand implements CommandExecutor {
 			}
 
 			int volume = region.getWidth() * region.getHeight() * region.getLength();
-			if(volume > plugin.config().getInt("Regeneration of regions.Maximum number of blocks that can be regenerated")){
+			int limit = plugin.config().getInt("Regeneration of regions.Maximum number of blocks that can be regenerated");
+			if(volume > limit){
 				send(ChatColor.RED, sender, "指定された範囲が大きすぎます(" + volume + ")。上限は" + limit + "ブロックです。");
 				return true;
 			}

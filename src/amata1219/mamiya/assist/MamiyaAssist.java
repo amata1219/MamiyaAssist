@@ -15,6 +15,7 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import amata1219.mamiya.assist.command.MamiyaCommand;
 import amata1219.mamiya.assist.listener.CancelBoostingElytraAtLowTPSListener;
+import amata1219.mamiya.assist.listener.KickAFKerListener;
 import amata1219.mamiya.assist.listener.TemporaryBoatListener;
 
 public class MamiyaAssist extends JavaPlugin {
@@ -30,14 +31,14 @@ public class MamiyaAssist extends JavaPlugin {
 		saveDefaultConfig();
 		
 		Plugin maybeWe = plugin.getServer().getPluginManager().getPlugin("WorldEdit");
-		if(!(maybeWe instanceof WorldEditPlugin))
-			throw new NullPointerException("[MamiyaAssist] Not found WorldEdit");
+		if(!(maybeWe instanceof WorldEditPlugin)) throw new NullPointerException("[MamiyaAssist] Not found WorldEdit");
 		
 		commands.put("mamiya", new MamiyaCommand((WorldEditPlugin) maybeWe));
 		
 		registerListeners(
 			new CancelBoostingElytraAtLowTPSListener(),
-			new TemporaryBoatListener()
+			new TemporaryBoatListener(),
+			new KickAFKerListener()
 		);
 	}
 
@@ -51,7 +52,7 @@ public class MamiyaAssist extends JavaPlugin {
 		return commands.get(command.getName()).onCommand(sender, command, label, args);
 	}
 
-	public static MamiyaAssist getPlugin(){
+	public static MamiyaAssist plugin(){
 		return plugin;
 	}
 	

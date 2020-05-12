@@ -30,11 +30,12 @@ public class KickAFKerListener implements Listener {
 	}
 	
 	private void add(Player player){
-		tasks.put(player.getUniqueId(), new KickAFKerTask(player).runTaskTimer(MamiyaAssist.getPlugin(), 1200, 1200));
+		tasks.put(player.getUniqueId(), new KickAFKerTask(player).runTaskTimer(MamiyaAssist.plugin(), 1200, 1200));
 	}
 	
 	private void remove(Player player){
-		tasks.remove(player.getUniqueId()).cancel();
+		BukkitTask task = tasks.remove(player.getUniqueId());
+		if(task != null) task.cancel();
 	}
 	
 }

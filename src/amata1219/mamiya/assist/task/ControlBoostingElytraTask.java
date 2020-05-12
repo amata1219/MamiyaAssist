@@ -9,7 +9,7 @@ import amata1219.mamiya.assist.Reflection;
 
 public class ControlBoostingElytraTask extends BukkitRunnable {
 
-	private final MamiyaAssist plugin = MamiyaAssist.getPlugin();
+	private final MamiyaAssist plugin = MamiyaAssist.plugin();
 	
 	private double[] recentTps;
 	
