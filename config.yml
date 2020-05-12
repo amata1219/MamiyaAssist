@@ -29,6 +29,13 @@
   'Maximum number of blocks that can be regenerated': 100000
 'Kicking AFKer':
   'Enabled or not': true
+  'Messaging intervals': 300
+  #The unit are in seconds.
+  'Applied or not regardless of TPS': false
+  'TPS Threshold to which the rule applies': 16
   'AFKed time required for kicks': 5
   #The unit are in minutes.
-  'Message to send when the plugin kick AFKer': "放置状態で一定時間が経過したためキックされました。"
+  'Message':
+    'When the plugin started appling the rule': "TPS減少のため、放置キックを実施します！"
+    'When the plugin stopped appling the rule': "TPSが復活しましたので放置キックを終了します。ご協力ありがとうございました！"
+    'When the plugin kicked AFKer': "放置状態で一定時間が経過したためキックされました。"

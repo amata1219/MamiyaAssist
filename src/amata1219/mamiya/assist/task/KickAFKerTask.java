@@ -28,7 +28,7 @@ public class KickAFKerTask extends BukkitRunnable {
 	}
 	
 	private String kickMessage(){
-		return plugin.config().getString("Kicking AFKer.Message to send when the plugin kick AFKer");
+		return plugin.config().getString("Kicking AFKer.Message.When the plugin kicked AFKer");
 	}
 
 }
