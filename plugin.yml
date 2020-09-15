@@ -1,13 +1,11 @@
 name: MamiyaAssist
 main: amata1219.mamiya.assist.MamiyaAssist
-version: 1.9.0
-api-version: 1.15
-softdepend: [WorldEdit, Essentials]
-author: amata1219(Twitter@amata1219)
+version: 2.0.0
+api-version: "1.16"
+softdepend: [Essentials]
+author: "@amata1219"
 
 commands:
   mamiya:
-    description: mamiya command.
-    usage: /<command> commands
     permission: mamiya.assist.command.mamiya
-    permission-message: You do not have permission "<permission>".
+    permission-message: "You don't have <permission>"

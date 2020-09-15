@@ -3,11 +3,9 @@ package amata1219.mamiya.assist.task;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import amata1219.mamiya.assist.MamiyaAssist;
-
 public class KickAFKerTask extends BukkitRunnable {
 	
-	private final MamiyaAssist plugin = MamiyaAssist.plugin();
+	private final MamiyaAssistOld plugin = MamiyaAssistOld.plugin();
 
 	private final Player player;
 	private int elapsedMinutes;

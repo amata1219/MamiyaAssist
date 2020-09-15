@@ -11,12 +11,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
-import amata1219.mamiya.assist.MamiyaAssist;
-import amata1219.mamiya.assist.observer.TPSObserverForBoostingElytra;
-
 public class CancelBoostingElytraListener implements Listener {
 	
-	private final MamiyaAssist plugin = MamiyaAssist.plugin();
+	private final MamiyaAssistOld plugin = MamiyaAssistOld.plugin();
 
 	private final TPSObserverForBoostingElytra observer = new TPSObserverForBoostingElytra();
 

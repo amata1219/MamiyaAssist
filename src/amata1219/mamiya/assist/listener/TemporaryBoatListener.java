@@ -21,15 +21,13 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
-import amata1219.mamiya.assist.MamiyaAssist;
-
 public class TemporaryBoatListener implements Listener {
 	
 	public static final String MAMIYA_BOTA_METADATA = "mamiya-boat";
 	private static final List<TreeSpecies> TREE_SPECIES = Collections.unmodifiableList(Arrays.asList(TreeSpecies.values()));
 	private static final Random RAND = new Random();
 	
-	private final MamiyaAssist plugin = MamiyaAssist.plugin();
+	private final MamiyaAssistOld plugin = MamiyaAssistOld.plugin();
 	
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event){

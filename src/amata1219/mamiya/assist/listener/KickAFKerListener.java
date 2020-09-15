@@ -9,14 +9,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
 
-import amata1219.mamiya.assist.MamiyaAssist;
-import amata1219.mamiya.assist.observer.TPSObserverForKickingAFKer;
 import amata1219.mamiya.assist.task.KickAFKerTask;
 import net.ess3.api.events.AfkStatusChangeEvent;
 
 public class KickAFKerListener implements Listener {
 	
-	private final MamiyaAssist plugin = MamiyaAssist.plugin();
+	private final MamiyaAssistOld plugin = MamiyaAssistOld.plugin();
 
 	private final TPSObserverForKickingAFKer observer = new TPSObserverForKickingAFKer();
 	

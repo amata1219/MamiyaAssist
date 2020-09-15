@@ -6,9 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import amata1219.mamiya.assist.MamiyaAssist;
-import amata1219.mamiya.assist.Reflection;
-
 public abstract class TPSObserver extends BukkitRunnable {
 	
 	private static final double[] recentTps;
@@ -30,7 +27,7 @@ public abstract class TPSObserver extends BukkitRunnable {
 		recentTps = (double[]) Reflection.getReflectionValue(field, minecraftServer);
 	}
 	
-	protected final MamiyaAssist plugin = MamiyaAssist.plugin();
+	protected final MamiyaAssistOld plugin = MamiyaAssistOld.plugin();
 	private boolean atLowTPS;
 	
 	@Override
