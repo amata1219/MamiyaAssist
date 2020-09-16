@@ -1,9 +1,11 @@
 package amata1219.mamiya.assist.listener
 
 import net.ess3.api.events.AfkStatusChangeEvent
+import org.bukkit.block.ShulkerBox
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.event.{EventHandler, Listener}
+import org.bukkit.inventory.meta.BlockStateMeta
 
 import scala.collection.mutable
 
@@ -18,7 +20,6 @@ object PlayerAfkKickListener extends Listener {
 
   @EventHandler
   def on(event: PlayerQuitEvent): Unit = {
-
   }
 
 }
