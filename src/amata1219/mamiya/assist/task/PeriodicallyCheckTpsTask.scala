@@ -7,11 +7,7 @@ import org.bukkit.scheduler.BukkitRunnable
 
 abstract class PeriodicallyCheckTpsTask() extends BukkitRunnable {
 
-  private var _isLessThanOrEqualToThreshold: Boolean = false
-  def isLessThanOrEqualToThreshold: Boolean = _isLessThanOrEqualToThreshold
-  private def isLessThanOrEqualToThreshold_=(value: Boolean): Unit = {
-    _isLessThanOrEqualToThreshold = value
-  }
+  var isLessThanOrEqualToThreshold: Boolean = false
 
   override def run(): Unit = {
     val server: Server = Main.INSTANCE.getServer
@@ -22,11 +18,10 @@ abstract class PeriodicallyCheckTpsTask() extends BukkitRunnable {
       server.broadcastMessage(message)
       isLessThanOrEqualToThreshold = false
     } else {
-      if (tps > tpsThreshold()) return {
+      if (tps > tpsThreshold()) return
       val message: String = ChatColor.translateAlternateColorCodes('&', message2Start())
-        server.broadcastMessage(message)
-        isLessThanOrEqualToThreshold = true
-      }
+      server.broadcastMessage(message)
+      isLessThanOrEqualToThreshold = true
     }
   }
 
